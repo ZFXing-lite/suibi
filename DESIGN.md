@@ -3,7 +3,7 @@
 > 一个打开就能写、按话题归档、笔记下面能挂讨论的本地记事本。
 > 数据在你自己手里，云盘只是备份。
 
-版本：v1.3
+版本：v1.4
 包名：`com.yq.suibi`
 最低系统：Android 8.0（API 26）
 目标系统：Android 14（API 34）
@@ -11,6 +11,15 @@
 ---
 
 ## 更新日志
+
+### v1.4
+
+- **改**：应用图标。自适应图标换成一道笔触加一点暖橙（`#35322D` 笔触 / `#D98E3D` 落点 / `#F7F2E9` 底色），补了 Android 13+ 主题化图标用的单色层。前景按 512 设计稿坐标书写，靠 group 缩放进 108 视口的 72×72 安全区，实测内容外接框 68×28、居中偏差 0.5dp、圆形蒙版零裁切。
+- **改**：全部图标改成代码里的 SVG 路径。26 个图标的路径数据（合计约 7.7 KB）直接写进 `ui/common/SuibiIcons.kt`，用 `PathParser` 在 `by lazy` 里构建 `ImageVector`。**移除了 `material-icons-extended` 依赖** —— 那个库为 26 个图标塞进几 MB 的类，是 APK 里最大的一块死重。
+  - 路径取自 Material Icons Round（Apache-2.0），坐标体系 24×24，和原来的 `Icons.Rounded.*` 视觉一致，不回归。
+  - RTL 相关的四个（返回 / 全部笔记 / 进入箭头 / 笔记）保留 `autoMirror = true`。
+  - 置顶图标用了 `fill-rule="evenodd"`，构建时映射成 `PathFillType.EvenOdd`，否则中间会画实。
+  - **APK 从 11.85 MB 降到 7.85 MB（-33.8%）**。
 
 ### v1.3
 

@@ -16,12 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.CloudUpload
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +35,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yq.suibi.data.SettingsStore
+import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.theme.Palettes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,7 +57,7 @@ fun SettingsScreen(
                 title = { Text("设置") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                        Icon(SI.ArrowBack, contentDescription = "返回")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -82,7 +77,7 @@ fun SettingsScreen(
         ) {
             item(key = "general") {
                 SettingRow(
-                    icon = Icons.Rounded.Tune,
+                    icon = SI.Tune,
                     title = "通用",
                     subtitle = "删除确认 · 字号 · 时间格式 · 导出宽度",
                     onClick = onOpenGeneral
@@ -91,7 +86,7 @@ fun SettingsScreen(
 
             item(key = "webdav") {
                 SettingRow(
-                    icon = Icons.Rounded.CloudUpload,
+                    icon = SI.CloudUpload,
                     title = "WebDAV 备份",
                     subtitle = "整库打包上传到坚果云等网盘",
                     onClick = onOpenWebDav
@@ -100,7 +95,7 @@ fun SettingsScreen(
 
             item(key = "theme") {
                 SettingRow(
-                    icon = Icons.Rounded.Palette,
+                    icon = SI.Palette,
                     title = "主题",
                     subtitle = palette.name,
                     onClick = onOpenTheme
@@ -124,7 +119,7 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "随笔 v1.3",
+                            text = "随笔 v1.4",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -189,7 +184,7 @@ private fun SettingRow(
                 )
             }
             Icon(
-                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                SI.KeyboardArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.outline
             )

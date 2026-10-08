@@ -20,15 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.MenuBook
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Brush
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Forum
-import androidx.compose.material.icons.rounded.PushPin
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -63,6 +54,7 @@ import com.yq.suibi.ui.common.DeleteConfirmDialog
 import com.yq.suibi.ui.common.DeleteIcon
 import com.yq.suibi.ui.common.EmptyState
 import com.yq.suibi.ui.common.MarkPickerDialog
+import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.common.SheetAction
 import com.yq.suibi.ui.common.SwipeAction
 import com.yq.suibi.ui.common.SwipeRevealRow
@@ -117,7 +109,7 @@ fun NoteListScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                            Icon(SI.ArrowBack, contentDescription = "返回")
                         }
                     },
                     actions = {
@@ -126,7 +118,7 @@ fun NoteListScreen(
                             if (!searchOpen) vm.onQueryChange("")
                         }) {
                             Icon(
-                                if (searchOpen) Icons.Rounded.Close else Icons.Rounded.Search,
+                                if (searchOpen) SI.Close else SI.Search,
                                 contentDescription = "搜索"
                             )
                         }
@@ -156,7 +148,7 @@ fun NoteListScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { vm.createNote(onOpenNote) },
-                icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
+                icon = { Icon(SI.Add, contentDescription = null) },
                 text = { Text("新建笔记") },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -192,7 +184,7 @@ fun NoteListScreen(
                         cornerRadius = 16.dp,
                         actions = {
                             SwipeAction(
-                                icon = Icons.Rounded.PushPin,
+                                icon = SI.PushPin,
                                 label = if (note.pinned) "取消置顶" else "置顶",
                                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
                             ) {
@@ -200,7 +192,7 @@ fun NoteListScreen(
                                 vm.togglePin(note)
                             }
                             SwipeAction(
-                                icon = Icons.Rounded.Brush,
+                                icon = SI.Brush,
                                 label = "标记",
                                 tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.85f)
                             ) {
@@ -248,9 +240,9 @@ fun NoteListScreen(
             actions = listOf(
                 SheetAction(
                     if (target.pinned) "取消置顶" else "置顶",
-                    Icons.Rounded.PushPin
+                    SI.PushPin
                 ) { vm.togglePin(target) },
-                SheetAction("标记颜色", Icons.Rounded.Brush) { markTarget = target },
+                SheetAction("标记颜色", SI.Brush) { markTarget = target },
                 SheetAction("删除笔记", DeleteIcon, destructive = true) {
                     deleteTarget = target
                 }
@@ -297,7 +289,7 @@ private fun NoteCard(
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.AutoMirrored.Rounded.MenuBook,
+                    SI.MenuBook,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(17.dp)
@@ -324,7 +316,7 @@ private fun NoteCard(
                 if (note.pinned) {
                     Spacer(Modifier.width(6.dp))
                     Icon(
-                        Icons.Rounded.PushPin,
+                        SI.PushPin,
                         contentDescription = "已置顶",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(13.dp)
@@ -354,7 +346,7 @@ private fun NoteCard(
                 if (note.discussionCount > 0) {
                     Spacer(Modifier.width(12.dp))
                     Icon(
-                        Icons.Rounded.Forum,
+                        SI.Forum,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.outline,
                         modifier = Modifier.height(13.dp)

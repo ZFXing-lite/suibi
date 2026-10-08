@@ -16,10 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,6 +46,7 @@ import com.yq.suibi.data.AppDatabase
 import com.yq.suibi.data.NoteHit
 import com.yq.suibi.data.TopicStats
 import com.yq.suibi.ui.common.EmptyState
+import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.common.relativeTime
 import com.yq.suibi.ui.common.snippet
 import com.yq.suibi.ui.common.vmFactory
@@ -80,7 +77,7 @@ fun SearchScreen(
                     title = { Text("搜索") },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                            Icon(SI.ArrowBack, contentDescription = "返回")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -95,12 +92,12 @@ fun SearchScreen(
                     placeholder = { Text("搜索话题、笔记、讨论") },
                     singleLine = true,
                     leadingIcon = {
-                        Icon(Icons.Rounded.Search, contentDescription = null)
+                        Icon(SI.Search, contentDescription = null)
                     },
                     trailingIcon = {
                         if (query.isNotEmpty()) {
                             IconButton(onClick = { vm.onQueryChange("") }) {
-                                Icon(Icons.Rounded.Close, contentDescription = "清空")
+                                Icon(SI.Close, contentDescription = "清空")
                             }
                         }
                     },

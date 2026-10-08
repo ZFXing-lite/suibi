@@ -19,9 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yq.suibi.data.SettingsStore
+import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.theme.SuibiPalette
 import com.yq.suibi.ui.theme.Palettes
 import kotlinx.coroutines.launch
@@ -62,7 +60,7 @@ fun ThemeScreen(
                 title = { Text("主题") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                        Icon(SI.ArrowBack, contentDescription = "返回")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -178,7 +176,7 @@ private fun PaletteCard(
             if (selected) {
                 Spacer(Modifier.width(10.dp))
                 Icon(
-                    Icons.Rounded.Check,
+                    SI.Check,
                     contentDescription = "已选",
                     tint = palette.primary,
                     modifier = Modifier.size(20.dp)

@@ -22,10 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Description
-import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -158,7 +154,7 @@ private fun AttachmentThumb(
                     modifier = Modifier.fillMaxWidth().padding(8.dp)
                 ) {
                     Icon(
-                        Icons.Rounded.Description,
+                        SI.Description,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -187,7 +183,7 @@ private fun AttachmentThumb(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    Icons.Rounded.Close,
+                    SI.Close,
                     contentDescription = "移除附件",
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(14.dp)
@@ -203,7 +199,7 @@ fun AttachmentBadge(count: Int, modifier: Modifier = Modifier) {
     if (count <= 0) return
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         Icon(
-            Icons.Rounded.Image,
+            SI.Image,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.outline,
             modifier = Modifier.height(13.dp)

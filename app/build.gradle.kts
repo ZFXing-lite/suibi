@@ -25,8 +25,8 @@ android {
         applicationId = "com.yq.suibi"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.3"
+        versionCode = 6
+        versionName = "1.4"
     }
 
     signingConfigs {
@@ -95,7 +95,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
+    // 不用 material-icons-extended —— 那个库几 MB，而我们只要 26 个图标。
+    // 图标改成代码里的 SVG 路径，见 ui/common/SuibiIcons.kt。
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")

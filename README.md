@@ -94,10 +94,13 @@
 | 存储 | Room 2.6.1（SQLite）+ DataStore Preferences |
 | 图片 | Coil 2.7.0 |
 | 网络 | OkHttp 4.12.0（手写 WebDAV） |
+| 图标 | 自带 SVG 路径（`ui/common/SuibiIcons.kt`），不依赖 material-icons-extended |
 | 构建 | AGP 8.5.2 / Gradle 8.7 / JDK 17 |
 | 系统 | minSdk 26（Android 8.0）· targetSdk 34 |
 
 搜索用 `LIKE` + `ESCAPE`，没有用 FTS5 —— 中文在 `unicode61` 分词下不可靠。
+
+图标是 26 个 `ImageVector`，路径数据直接写在代码里，用 `PathParser` 懒构建。省掉了 `material-icons-extended` 的几 MB，release APK 从 11.85 MB 降到 7.85 MB。
 
 ## 构建
 
@@ -162,6 +165,7 @@ DESIGN.md               完整设计文档
 
 | 版本 | 内容 |
 |---|---|
+| **v1.4** | 新应用图标（笔触 + 暖橙落点）· 全部图标改 SVG 路径 · 移除 material-icons-extended（APK -33.8%） |
 | **v1.3** | 笔记与讨论挂附件 · 「通用」设置页 · 删除二次确认 · 直接新建笔记 · 话题/笔记图标 · 备份含附件 |
 | **v1.2** | 全部笔记视图 · 笔记内查找高亮 · 导出单篇为图片 |
 | **v1.1** | 修内容不加载 · 时间署名 · 左滑菜单 · 标记颜色 · 8 套主题 · 设置分页 · 加速过渡 · 统一圆角 · 线条图标 |

@@ -20,16 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Article
-import androidx.compose.material.icons.automirrored.rounded.MenuBook
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Brush
-import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.Forum
-import androidx.compose.material.icons.rounded.PushPin
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,6 +57,7 @@ import com.yq.suibi.ui.common.DeleteIcon
 import com.yq.suibi.ui.common.EmptyState
 import com.yq.suibi.ui.common.MarkPickerDialog
 import com.yq.suibi.ui.common.RenameIcon
+import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.common.SheetAction
 import com.yq.suibi.ui.common.SwipeAction
 import com.yq.suibi.ui.common.SwipeRevealRow
@@ -114,13 +105,13 @@ fun TopicListScreen(
                 title = { Text("随笔", fontWeight = FontWeight.SemiBold) },
                 actions = {
                     IconButton(onClick = onOpenAllNotes) {
-                        Icon(Icons.AutoMirrored.Rounded.Article, contentDescription = "全部笔记")
+                        Icon(SI.Article, contentDescription = "全部笔记")
                     }
                     IconButton(onClick = onOpenSearch) {
-                        Icon(Icons.Rounded.Search, contentDescription = "搜索")
+                        Icon(SI.Search, contentDescription = "搜索")
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Rounded.Settings, contentDescription = "设置")
+                        Icon(SI.Settings, contentDescription = "设置")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -133,7 +124,7 @@ fun TopicListScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { createSheet = true },
-                icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
+                icon = { Icon(SI.Add, contentDescription = null) },
                 text = { Text("新建") },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -163,7 +154,7 @@ fun TopicListScreen(
                         cornerRadius = 16.dp,
                         actions = {
                             SwipeAction(
-                                icon = Icons.Rounded.PushPin,
+                                icon = SI.PushPin,
                                 label = if (topic.pinned) "取消置顶" else "置顶",
                                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
                             ) {
@@ -171,7 +162,7 @@ fun TopicListScreen(
                                 vm.togglePin(topic)
                             }
                             SwipeAction(
-                                icon = Icons.Rounded.Brush,
+                                icon = SI.Brush,
                                 label = "标记",
                                 tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.85f)
                             ) {
@@ -209,8 +200,8 @@ fun TopicListScreen(
         ActionSheet(
             onDismiss = { createSheet = false },
             actions = listOf(
-                SheetAction("新建话题", Icons.Rounded.Forum) { showCreate = true },
-                SheetAction("新建笔记", Icons.AutoMirrored.Rounded.MenuBook) {
+                SheetAction("新建话题", SI.Forum) { showCreate = true },
+                SheetAction("新建笔记", SI.MenuBook) {
                     if (topics.isEmpty()) showCreate = true else pickTopicForNote = true
                 }
             )
@@ -267,9 +258,9 @@ fun TopicListScreen(
             actions = listOf(
                 SheetAction(
                     if (target.pinned) "取消置顶" else "置顶",
-                    Icons.Rounded.PushPin
+                    SI.PushPin
                 ) { vm.togglePin(target) },
-                SheetAction("标记颜色", Icons.Rounded.Brush) { markTarget = target },
+                SheetAction("标记颜色", SI.Brush) { markTarget = target },
                 SheetAction("重命名", RenameIcon) { renameTarget = target },
                 SheetAction("删除话题", DeleteIcon, destructive = true) {
                     deleteTarget = target
@@ -319,7 +310,7 @@ private fun TopicPickerDialog(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
                         ) {
                             Icon(
-                                Icons.Rounded.Forum,
+                                SI.Forum,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(17.dp)
@@ -380,7 +371,7 @@ private fun TopicCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Rounded.Forum,
+                        SI.Forum,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
@@ -394,7 +385,7 @@ private fun TopicCard(
                     if (topic.pinned) {
                         Spacer(Modifier.width(6.dp))
                         Icon(
-                            Icons.Rounded.PushPin,
+                            SI.PushPin,
                             contentDescription = "已置顶",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(13.dp)
@@ -409,7 +400,7 @@ private fun TopicCard(
                 )
             }
             Icon(
-                Icons.Rounded.ChevronRight,
+                SI.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.outline
             )

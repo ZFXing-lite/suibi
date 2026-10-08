@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.DriveFileRenameOutline
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -269,6 +265,6 @@ fun IconLabel(icon: ImageVector, text: String, tint: Color) {
     }
 }
 
-val RenameIcon: ImageVector get() = Icons.Rounded.DriveFileRenameOutline
-val EditIcon: ImageVector get() = Icons.Rounded.Edit
-val DeleteIcon: ImageVector get() = Icons.Rounded.Delete
+val RenameIcon: ImageVector get() = SI.DriveFileRenameOutline
+val EditIcon: ImageVector get() = SI.Edit
+val DeleteIcon: ImageVector get() = SI.Delete

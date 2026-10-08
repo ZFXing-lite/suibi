@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +44,7 @@ import com.yq.suibi.data.AppDatabase
 import com.yq.suibi.data.SettingsStore
 import com.yq.suibi.data.WebDavConfig
 import com.yq.suibi.ui.common.ConfirmDialog
+import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.common.absoluteTime
 import com.yq.suibi.ui.common.vmFactory
 
@@ -105,7 +103,7 @@ fun WebDavScreen(
                         vm.save(current())
                         onBack()
                     }) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                        Icon(SI.ArrowBack, contentDescription = "返回")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -224,7 +222,7 @@ fun WebDavScreen(
                         Spacer(Modifier.width(8.dp))
                     } else {
                         Icon(
-                            Icons.Rounded.CloudUpload,
+                            SI.CloudUpload,
                             contentDescription = null,
                             modifier = Modifier.height(18.dp)
                         )
