@@ -25,8 +25,8 @@ android {
         applicationId = "com.yq.suibi"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.2"
+        versionCode = 5
+        versionName = "1.3"
     }
 
     signingConfigs {
@@ -103,6 +103,8 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // 图片加载：异步、按需降采样、内存+磁盘缓存，避免大图 OOM
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

@@ -35,6 +35,10 @@ fun relativeTime(ts: Long): String {
 fun absoluteTime(ts: Long): String =
     if (ts <= 0L) "" else "${fmtYMD.format(Date(ts))} ${fmtTime.format(Date(ts))}"
 
+/** 按「通用」里的时间偏好选格式。relative = true 用相对时间。 */
+fun timeText(ts: Long, relative: Boolean): String =
+    if (relative) relativeTime(ts) else absoluteTime(ts)
+
 /** 列表里的正文摘要：合并空白 + 截断。 */
 fun snippet(text: String, max: Int = 70): String {
     val flat = text.replace(Regex("\\s+"), " ").trim()

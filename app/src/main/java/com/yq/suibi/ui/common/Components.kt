@@ -127,6 +127,76 @@ fun ConfirmDialog(
     )
 }
 
+/**
+ * 删除确认。
+ *
+ * confirmTwice = true 时走两段：先问一次，再问一次，第二段的按钮才真删。
+ * 第一段给「继续」，第二段给「确认删除」——两段的用词不同，
+ * 避免用户连点两下同一个位置就把东西删了。
+ */
+@Composable
+fun DeleteConfirmDialog(
+    title: String,
+    message: String,
+    confirmTwice: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    var stage by remember { mutableStateOf(1) }
+
+    if (!confirmTwice) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(title) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = onConfirm) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text("取消") }
+            }
+        )
+    } else if (stage == 1) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(title) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { stage = 2 }) { Text("继续") }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text("取消") }
+            }
+        )
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("再确认一次") },
+            text = {
+                Column {
+                    Text("删除后无法恢复。")
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onConfirm) {
+                    Text("确认删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text("取消") }
+            }
+        )
+    }
+}
+
 data class SheetAction(
     val label: String,
     val icon: ImageVector,

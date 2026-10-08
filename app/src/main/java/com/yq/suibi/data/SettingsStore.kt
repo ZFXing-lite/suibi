@@ -26,6 +26,20 @@ data class WebDavConfig(
         get() = server.isNotBlank() && username.isNotBlank() && password.isNotBlank()
 }
 
+/** 「通用」里的可调项。 */
+data class GeneralConfig(
+    /** 删除前是否要求二次确认。 */
+    val confirmDelete: Boolean = true,
+    /** 讨论区默认是否展开。 */
+    val discussionsExpanded: Boolean = true,
+    /** 列表里的时间用相对（3 分钟前）还是绝对（10-05 14:22）。 */
+    val relativeTime: Boolean = true,
+    /** 正文字号倍率，1.0 为标准。 */
+    val fontScale: Float = 1.0f,
+    /** 导出长图宽度，px。 */
+    val exportWidth: Int = 1080
+)
+
 class SettingsStore(private val context: Context) {
 
     private object K {
@@ -38,6 +52,12 @@ class SettingsStore(private val context: Context) {
         val lastAt = longPreferencesKey("last_backup_at")
         val lastStatus = stringPreferencesKey("last_backup_status")
         val palette = stringPreferencesKey("palette_id")
+
+        val confirmDelete = booleanPreferencesKey("general_confirm_delete")
+        val discussionsExpanded = booleanPreferencesKey("general_discussions_expanded")
+        val relativeTime = booleanPreferencesKey("general_relative_time")
+        val fontScale = intPreferencesKey("general_font_scale_pct")
+        val exportWidth = intPreferencesKey("general_export_width")
     }
 
     /** 当前主题 id，默认「宣纸」。 */
@@ -48,6 +68,23 @@ class SettingsStore(private val context: Context) {
     suspend fun setPalette(id: String) {
         context.suibiStore.edit { it[K.palette] = id }
     }
+
+    /** 「通用」配置。 */
+    val general: Flow<GeneralConfig> = context.suibiStore.data.map { p ->
+        GeneralConfig(
+            confirmDelete = p[K.confirmDelete] ?: true,
+            discussionsExpanded = p[K.discussionsExpanded] ?: true,
+            relativeTime = p[K.relativeTime] ?: true,
+            fontScale = (p[K.fontScale] ?: 100) / 100f,
+            exportWidth = p[K.exportWidth] ?: 1080
+        )
+    }
+
+    suspend fun setConfirmDelete(v: Boolean) = context.suibiStore.edit { it[K.confirmDelete] = v }
+    suspend fun setDiscussionsExpanded(v: Boolean) = context.suibiStore.edit { it[K.discussionsExpanded] = v }
+    suspend fun setRelativeTime(v: Boolean) = context.suibiStore.edit { it[K.relativeTime] = v }
+    suspend fun setFontScale(v: Float) = context.suibiStore.edit { it[K.fontScale] = (v * 100).toInt() }
+    suspend fun setExportWidth(v: Int) = context.suibiStore.edit { it[K.exportWidth] = v }
 
     val config: Flow<WebDavConfig> = context.suibiStore.data.map { p ->
         WebDavConfig(

@@ -1,8 +1,12 @@
 package com.yq.suibi.ui.editor
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yq.suibi.data.AppDatabase
+import com.yq.suibi.data.Attachment
+import com.yq.suibi.data.AttachmentStore
 import com.yq.suibi.data.Discussion
 import com.yq.suibi.data.Note
 import kotlinx.coroutines.CoroutineScope
@@ -16,11 +20,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class EditorViewModel(
+    private val context: Context,
     private val db: AppDatabase,
     private val appScope: CoroutineScope,
     private val topicId: Long,
@@ -60,6 +66,21 @@ class EditorViewModel(
             if (id <= 0L) flowOf(emptyList()) else db.discussionDao().observeByNote(id)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** 挂在笔记正文下的附件。 */
+    val noteAttachments: StateFlow<List<Attachment>> = _noteId
+        .flatMapLatest { id ->
+            if (id <= 0L) flowOf(emptyList()) else db.attachmentDao().observeByNote(id)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** 每条讨论的附件，按 discussionId 分组。 */
+    val discussionAttachments: StateFlow<Map<Long, List<Attachment>>> = _noteId
+        .flatMapLatest { id ->
+            if (id <= 0L) flowOf(emptyList()) else db.attachmentDao().observeByNoteDiscussions(id)
+        }
+        .map { list -> list.groupBy { it.discussionId ?: -1L } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     private val saveSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 64)
 
@@ -176,5 +197,63 @@ class EditorViewModel(
         if (id <= 0L) return
         db.noteDao().get(id)?.let { db.noteDao().update(it.copy(updatedAt = now)) }
         _updatedAt.value = now
+    }
+
+    /* ---------- 附件 ---------- */
+
+    /**
+     * 给笔记挂附件。
+     *
+     * 新笔记还没有 id，先落一次库拿到 id 再挂。
+     * 这里不能用 requireNoteId() —— 它走 persist()，而 persist() 在
+     * 标题正文都为空时会直接返回，导致「空笔记先加附件」被丢掉。
+     */
+    fun addNoteAttachment(uri: Uri) {
+        viewModelScope.launch {
+            val id = ensureNoteExists() ?: return@launch
+            val a = AttachmentStore.import(context, uri, AttachmentStore.Owner.OfNote(id))
+                ?: return@launch
+            db.attachmentDao().insert(a)
+            touchNote(System.currentTimeMillis())
+        }
+    }
+
+    /** 不管标题正文是否为空，都要有一行 notes。 */
+    private suspend fun ensureNoteExists(): Long? {
+        val existing = _noteId.value
+        if (existing > 0L) return existing
+        val now = System.currentTimeMillis()
+        val id = db.noteDao().insert(
+            Note(
+                topicId = topicId,
+                title = _title.value,
+                content = _content.value,
+                createdAt = now,
+                updatedAt = now
+            )
+        )
+        _noteId.value = id
+        _createdAt.value = now
+        _updatedAt.value = now
+        return id
+    }
+
+    fun addDiscussionAttachment(discussionId: Long, uri: Uri) {
+        viewModelScope.launch {
+            val a = AttachmentStore.import(
+                context, uri, AttachmentStore.Owner.OfDiscussion(discussionId)
+            ) ?: return@launch
+            db.attachmentDao().insert(a)
+            touchNote(System.currentTimeMillis())
+        }
+    }
+
+    /** 移除附件：先删库行，再删磁盘文件。 */
+    fun removeAttachment(attachment: Attachment) {
+        viewModelScope.launch {
+            db.attachmentDao().delete(attachment.id)
+            AttachmentStore.deleteFile(context, attachment.relPath)
+            touchNote(System.currentTimeMillis())
+        }
     }
 }

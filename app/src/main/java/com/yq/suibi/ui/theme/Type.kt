@@ -5,6 +5,23 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/** 按倍率缩放整套字号。1.0 = 标准。 */
+fun suibiTypography(scale: Float): Typography {
+    val s = scale.coerceIn(0.8f, 1.4f)
+    fun TextStyle.scaled() = copy(fontSize = fontSize * s, lineHeight = lineHeight * s)
+
+    return Typography(
+        titleLarge = SuibiTypography.titleLarge.scaled(),
+        titleMedium = SuibiTypography.titleMedium.scaled(),
+        titleSmall = SuibiTypography.titleSmall.scaled(),
+        bodyLarge = SuibiTypography.bodyLarge.scaled(),
+        bodyMedium = SuibiTypography.bodyMedium.scaled(),
+        bodySmall = SuibiTypography.bodySmall.scaled(),
+        labelLarge = SuibiTypography.labelLarge.scaled(),
+        labelSmall = SuibiTypography.labelSmall.scaled()
+    )
+}
+
 val SuibiTypography = Typography(
     titleLarge = TextStyle(
         fontSize = 22.sp,

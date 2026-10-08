@@ -17,6 +17,7 @@ import com.yq.suibi.ui.allnotes.AllNotesScreen
 import com.yq.suibi.ui.editor.EditorScreen
 import com.yq.suibi.ui.notes.NoteListScreen
 import com.yq.suibi.ui.search.SearchScreen
+import com.yq.suibi.ui.settings.GeneralScreen
 import com.yq.suibi.ui.settings.SettingsScreen
 import com.yq.suibi.ui.settings.ThemeScreen
 import com.yq.suibi.ui.settings.WebDavScreen
@@ -29,6 +30,7 @@ object Routes {
     const val SETTINGS = "settings"
     const val WEBDAV = "settings/webdav"
     const val THEME = "settings/theme"
+    const val GENERAL = "settings/general"
     const val NOTES = "notes/{topicId}"
     const val EDITOR = "editor/{topicId}/{noteId}?q={q}"
 
@@ -75,7 +77,8 @@ fun SuibiNavHost(onPaletteChange: (String) -> Unit = {}) {
                 onOpenTopic = { nav.navigate(Routes.notes(it)) },
                 onOpenAllNotes = { nav.navigate(Routes.ALL_NOTES) },
                 onOpenSearch = { nav.navigate(Routes.SEARCH) },
-                onOpenSettings = { nav.navigate(Routes.SETTINGS) }
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onNewNote = { topicId -> nav.navigate(Routes.editor(topicId, -1L)) }
             )
         }
 
@@ -145,7 +148,15 @@ fun SuibiNavHost(onPaletteChange: (String) -> Unit = {}) {
                 store = app.settings,
                 onBack = { nav.popBackStack() },
                 onOpenWebDav = { nav.navigate(Routes.WEBDAV) },
-                onOpenTheme = { nav.navigate(Routes.THEME) }
+                onOpenTheme = { nav.navigate(Routes.THEME) },
+                onOpenGeneral = { nav.navigate(Routes.GENERAL) }
+            )
+        }
+
+        composable(Routes.GENERAL) {
+            GeneralScreen(
+                store = app.settings,
+                onBack = { nav.popBackStack() }
             )
         }
 

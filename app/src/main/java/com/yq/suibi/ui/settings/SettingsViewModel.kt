@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 enum class Busy { NONE, TESTING, BACKING_UP, RESTORING }
 
 class SettingsViewModel(
+    private val context: android.content.Context,
     private val db: AppDatabase,
     private val store: SettingsStore
 ) : ViewModel() {
@@ -64,7 +65,7 @@ class SettingsViewModel(
                 if (!client.ensureDir(cfg.remoteDir)) {
                     "无法创建远程目录 /${cfg.remoteDir}"
                 } else {
-                    val bytes = BackupManager.export(db)
+                    val bytes = BackupManager.export(context, db)
                     val (ok, msg) = client.upload("${cfg.remoteDir}/${BackupManager.FILE_NAME}", bytes)
                     if (ok) "$msg（${bytes.size / 1024} KB）" else msg
                 }
@@ -89,7 +90,7 @@ class SettingsViewModel(
                 val bytes = WebDavClient(cfg)
                     .download("${cfg.remoteDir}/${BackupManager.FILE_NAME}")
                     ?: return@withContext "云端没有找到备份文件"
-                BackupManager.restore(db, bytes)
+                BackupManager.restore(context, db, bytes)
             }
             _message.value = result
             _busy.value = Busy.NONE

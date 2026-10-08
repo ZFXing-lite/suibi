@@ -54,7 +54,9 @@ object NoteImage {
         val onBg: Int,
         val muted: Int,
         val accent: Int,
-        val rule: Int
+        val rule: Int,
+        /** 输出宽度（px）。排版按 1080 逻辑坐标写，靠画布缩放适配。 */
+        val width: Int = WIDTH
     )
 
     /* ---------- 渲染 ---------- */
@@ -106,11 +108,18 @@ object NoteImage {
 
             var height = (PAD * 2).toFloat()
             blocks.forEach { height += it.totalHeight() }
-            val finalHeight = height.toInt().coerceAtMost(MAX_HEIGHT)
 
-            val bmp = Bitmap.createBitmap(WIDTH, finalHeight, Bitmap.Config.ARGB_8888)
+            // 一切按 1080 的逻辑坐标排版，最后整块画布缩放。
+            // 这样字号是矢量缩放，放大到 1440 也不会糊。
+            val outWidth = spec.width.coerceIn(720, 2160)
+            val scale = outWidth.toFloat() / WIDTH
+            val maxHeight = (MAX_HEIGHT * scale).toInt()
+            val finalHeight = (height * scale).toInt().coerceAtMost(maxHeight)
+
+            val bmp = Bitmap.createBitmap(outWidth, finalHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bmp)
             canvas.drawColor(spec.bg)
+            canvas.scale(scale, scale)
 
             var y = PAD.toFloat()
             for (blk in blocks) {
@@ -139,7 +148,7 @@ object NoteImage {
                     }
                 }
                 y += blk.gapAfter
-                if (y > finalHeight) break
+                if (y * scale > finalHeight) break
             }
             return bmp
         }

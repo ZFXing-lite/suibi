@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,7 +57,10 @@ fun WebDavScreen(
     store: SettingsStore,
     onBack: () -> Unit
 ) {
-    val vm: SettingsViewModel = viewModel(factory = vmFactory { SettingsViewModel(db, store) })
+    val appContext = LocalContext.current.applicationContext
+    val vm: SettingsViewModel = viewModel(
+        factory = vmFactory { SettingsViewModel(appContext, db, store) }
+    )
     val saved by vm.config.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val message by vm.message.collectAsStateWithLifecycle()

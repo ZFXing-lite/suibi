@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Brush
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Forum
@@ -46,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +56,7 @@ import com.yq.suibi.data.AppDatabase
 import com.yq.suibi.data.NoteWithTopic
 import com.yq.suibi.ui.common.ActionSheet
 import com.yq.suibi.ui.common.ConfirmDialog
+import com.yq.suibi.ui.common.DeleteConfirmDialog
 import com.yq.suibi.ui.common.DeleteIcon
 import com.yq.suibi.ui.common.EmptyState
 import com.yq.suibi.ui.common.MarkPickerDialog
@@ -62,6 +65,7 @@ import com.yq.suibi.ui.common.SwipeAction
 import com.yq.suibi.ui.common.SwipeRevealRow
 import com.yq.suibi.ui.common.relativeTime
 import com.yq.suibi.ui.common.snippet
+import com.yq.suibi.ui.common.timeText
 import com.yq.suibi.ui.common.vmFactory
 import com.yq.suibi.ui.theme.tintSurface
 
@@ -78,6 +82,12 @@ fun AllNotesScreen(
     val vm: AllNotesViewModel = viewModel(factory = vmFactory { AllNotesViewModel(db) })
     val notes by vm.notes.collectAsStateWithLifecycle()
     val query by vm.query.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as com.yq.suibi.SuibiApp
+    val general by app.settings.general.collectAsStateWithLifecycle(
+        initialValue = com.yq.suibi.data.GeneralConfig()
+    )
 
     var searchOpen by remember { mutableStateOf(false) }
     var sheetTarget by remember { mutableStateOf<NoteWithTopic?>(null) }
@@ -186,6 +196,7 @@ fun AllNotesScreen(
                     ) {
                         AllNoteCard(
                             note = note,
+                            relativeTime = general.relativeTime,
                             onClick = {
                                 if (open) openId = null
                                 else onOpenNote(note.topicId, note.id)
@@ -226,9 +237,10 @@ fun AllNotesScreen(
     }
 
     deleteTarget?.let { target ->
-        ConfirmDialog(
+        DeleteConfirmDialog(
             title = "删除笔记",
             message = "「${target.title.ifBlank { "无标题" }}」及其 ${target.discussionCount} 条讨论会被一起删除。",
+            confirmTwice = general.confirmDelete,
             onDismiss = { deleteTarget = null },
             onConfirm = {
                 deleteTarget = null
@@ -242,6 +254,7 @@ fun AllNotesScreen(
 @Composable
 private fun AllNoteCard(
     note: NoteWithTopic,
+    relativeTime: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -284,6 +297,13 @@ private fun AllNoteCard(
             Spacer(Modifier.height(5.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.MenuBook,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(17.dp)
+                )
+                Spacer(Modifier.width(8.dp))
                 Text(
                     text = note.title.ifBlank { "无标题" },
                     style = MaterialTheme.typography.titleMedium,
@@ -319,7 +339,7 @@ private fun AllNoteCard(
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = relativeTime(note.updatedAt),
+                    text = timeText(note.updatedAt, relativeTime),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline
                 )

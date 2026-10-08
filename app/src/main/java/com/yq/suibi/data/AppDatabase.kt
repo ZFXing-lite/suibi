@@ -8,8 +8,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Topic::class, Note::class, Discussion::class],
-    version = 2,
+    entities = [Topic::class, Note::class, Discussion::class, Attachment::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -17,6 +17,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun topicDao(): TopicDao
     abstract fun noteDao(): NoteDao
     abstract fun discussionDao(): DiscussionDao
+    abstract fun attachmentDao(): AttachmentDao
     abstract fun searchDao(): SearchDao
 
     companion object {
@@ -31,6 +32,31 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** v3：新增附件表，笔记与讨论都能挂图片/文件。 */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `attachments` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `noteId` INTEGER,
+                        `discussionId` INTEGER,
+                        `kind` TEXT NOT NULL,
+                        `displayName` TEXT NOT NULL,
+                        `mimeType` TEXT NOT NULL,
+                        `size` INTEGER NOT NULL,
+                        `relPath` TEXT NOT NULL,
+                        `createdAt` INTEGER NOT NULL,
+                        FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+                        FOREIGN KEY(`discussionId`) REFERENCES `discussions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_noteId` ON `attachments` (`noteId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_attachments_discussionId` ON `attachments` (`discussionId`)")
+            }
+        }
+
         @Volatile
         private var instance: AppDatabase? = null
 
@@ -41,7 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "suibi.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { instance = it }
             }

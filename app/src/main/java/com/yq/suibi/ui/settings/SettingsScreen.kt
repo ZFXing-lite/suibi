@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,7 +49,8 @@ fun SettingsScreen(
     store: SettingsStore,
     onBack: () -> Unit,
     onOpenWebDav: () -> Unit,
-    onOpenTheme: () -> Unit
+    onOpenTheme: () -> Unit,
+    onOpenGeneral: () -> Unit
 ) {
     val paletteId by store.paletteId.collectAsStateWithLifecycle(initialValue = "xuanzhi")
     val palette = Palettes.byId(paletteId)
@@ -78,6 +80,15 @@ fun SettingsScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            item(key = "general") {
+                SettingRow(
+                    icon = Icons.Rounded.Tune,
+                    title = "通用",
+                    subtitle = "删除确认 · 字号 · 时间格式 · 导出宽度",
+                    onClick = onOpenGeneral
+                )
+            }
+
             item(key = "webdav") {
                 SettingRow(
                     icon = Icons.Rounded.CloudUpload,
@@ -113,7 +124,7 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "随笔 v1.2",
+                            text = "随笔 v1.3",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )

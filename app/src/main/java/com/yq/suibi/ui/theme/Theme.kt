@@ -6,11 +6,12 @@ import androidx.compose.runtime.Composable
 @Composable
 fun SuibiTheme(
     palette: SuibiPalette,
+    fontScale: Float = 1f,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
         colorScheme = palette.scheme(),
-        typography = SuibiTypography,
+        typography = suibiTypography(fontScale),
         content = content
     )
 }

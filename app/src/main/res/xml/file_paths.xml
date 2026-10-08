@@ -4,4 +4,8 @@
     <cache-path
         name="share"
         path="share/" />
+    <!-- 笔记附件，分享/用其它应用打开时用 -->
+    <files-path
+        name="attachments"
+        path="attachments/" />
 </paths>

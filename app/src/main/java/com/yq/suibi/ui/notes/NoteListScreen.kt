@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Brush
 import androidx.compose.material.icons.rounded.Close
@@ -49,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,6 +59,7 @@ import com.yq.suibi.data.AppDatabase
 import com.yq.suibi.data.NoteStats
 import com.yq.suibi.ui.common.ActionSheet
 import com.yq.suibi.ui.common.ConfirmDialog
+import com.yq.suibi.ui.common.DeleteConfirmDialog
 import com.yq.suibi.ui.common.DeleteIcon
 import com.yq.suibi.ui.common.EmptyState
 import com.yq.suibi.ui.common.MarkPickerDialog
@@ -65,6 +68,7 @@ import com.yq.suibi.ui.common.SwipeAction
 import com.yq.suibi.ui.common.SwipeRevealRow
 import com.yq.suibi.ui.common.relativeTime
 import com.yq.suibi.ui.common.snippet
+import com.yq.suibi.ui.common.timeText
 import com.yq.suibi.ui.common.vmFactory
 import com.yq.suibi.ui.theme.tintSurface
 
@@ -86,6 +90,12 @@ fun NoteListScreen(
     val notes by vm.notes.collectAsStateWithLifecycle()
     val topic by vm.topic.collectAsStateWithLifecycle()
     val query by vm.query.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val app = context.applicationContext as com.yq.suibi.SuibiApp
+    val general by app.settings.general.collectAsStateWithLifecycle(
+        initialValue = com.yq.suibi.data.GeneralConfig()
+    )
 
     var searchOpen by remember { mutableStateOf(false) }
     var sheetTarget by remember { mutableStateOf<NoteStats?>(null) }
@@ -209,6 +219,7 @@ fun NoteListScreen(
                     ) {
                         NoteCard(
                             note = note,
+                            relativeTime = general.relativeTime,
                             onClick = {
                                 if (open) openId = null else onOpenNote(note.id)
                             },
@@ -248,9 +259,10 @@ fun NoteListScreen(
     }
 
     deleteTarget?.let { target ->
-        ConfirmDialog(
+        DeleteConfirmDialog(
             title = "删除笔记",
             message = "「${target.title.ifBlank { "无标题" }}」及其 ${target.discussionCount} 条讨论会被一起删除。",
+            confirmTwice = general.confirmDelete,
             onDismiss = { deleteTarget = null },
             onConfirm = {
                 deleteTarget = null
@@ -264,6 +276,7 @@ fun NoteListScreen(
 @Composable
 private fun NoteCard(
     note: NoteStats,
+    relativeTime: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -283,6 +296,13 @@ private fun NoteCard(
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.MenuBook,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(17.dp)
+                )
+                Spacer(Modifier.width(8.dp))
                 if (note.color != null) {
                     Box(
                         modifier = Modifier
@@ -327,7 +347,7 @@ private fun NoteCard(
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = relativeTime(note.updatedAt),
+                    text = timeText(note.updatedAt, relativeTime),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline
                 )

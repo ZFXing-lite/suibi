@@ -61,6 +61,51 @@ data class Discussion(
     val updatedAt: Long
 )
 
+/* ---------- 附件 ---------- */
+
+object AttachmentKind {
+    const val IMAGE = "IMAGE"
+    const val FILE = "FILE"
+}
+
+/**
+ * 挂在笔记或讨论上的附件。
+ *
+ * noteId 与 discussionId 只有一个非空 —— 分别指向两种宿主。
+ * 两个外键都是 CASCADE，所以删笔记/删讨论时附件行自动跟着走
+ * （磁盘上的文件由 AttachmentStore 显式清理）。
+ */
+@Entity(
+    tableName = "attachments",
+    foreignKeys = [
+        ForeignKey(
+            entity = Note::class,
+            parentColumns = ["id"],
+            childColumns = ["noteId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Discussion::class,
+            parentColumns = ["id"],
+            childColumns = ["discussionId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("noteId"), Index("discussionId")]
+)
+data class Attachment(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+    val noteId: Long? = null,
+    val discussionId: Long? = null,
+    val kind: String,
+    val displayName: String,
+    val mimeType: String,
+    val size: Long,
+    /** 相对 filesDir 的路径，换设备/换沙箱路径也不会失效。 */
+    val relPath: String,
+    val createdAt: Long
+)
+
 /* ---------- query projections ---------- */
 
 data class TopicStats(

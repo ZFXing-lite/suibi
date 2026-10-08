@@ -27,9 +27,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             val app = LocalContext.current.applicationContext as SuibiApp
             var paletteId by remember { mutableStateOf<String?>(null) }
+            var fontScale by remember { mutableStateOf(1f) }
 
             LaunchedEffect(Unit) {
                 paletteId = app.settings.paletteId.first()
+            }
+
+            // 字号倍率来自「通用」，改了立刻生效。
+            LaunchedEffect(Unit) {
+                app.settings.general.collect { fontScale = it.fontScale }
             }
 
             val palette = Palettes.byId(paletteId)
@@ -46,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            SuibiTheme(palette = palette) {
+            SuibiTheme(palette = palette, fontScale = fontScale) {
                 SuibiNavHost(onPaletteChange = { paletteId = it })
             }
         }

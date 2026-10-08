@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,8 +30,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AttachFile
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
@@ -75,10 +78,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yq.suibi.data.AppDatabase
+import com.yq.suibi.data.Attachment
+import com.yq.suibi.data.AttachmentStore
 import com.yq.suibi.data.Discussion
 import com.yq.suibi.export.NoteImage
 import com.yq.suibi.ui.common.ActionSheet
+import com.yq.suibi.ui.common.AttachmentStrip
 import com.yq.suibi.ui.common.ConfirmDialog
+import com.yq.suibi.ui.common.DeleteConfirmDialog
 import com.yq.suibi.ui.common.DeleteIcon
 import com.yq.suibi.ui.common.EditIcon
 import com.yq.suibi.ui.common.HighlightTransform
@@ -86,6 +93,7 @@ import com.yq.suibi.ui.common.SheetAction
 import com.yq.suibi.ui.common.TextInputDialog
 import com.yq.suibi.ui.common.absoluteTime
 import com.yq.suibi.ui.common.findMatches
+import com.yq.suibi.ui.common.rememberAttachmentPickers
 import com.yq.suibi.ui.common.vmFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,9 +110,11 @@ fun EditorScreen(
     initialQuery: String = "",
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+
     val vm: EditorViewModel = viewModel(
         key = "editor-$topicId-$noteId",
-        factory = vmFactory { EditorViewModel(db, appScope, topicId, noteId) }
+        factory = vmFactory { EditorViewModel(context, db, appScope, topicId, noteId) }
     )
 
     val titleState by vm.title.collectAsStateWithLifecycle()
@@ -114,6 +124,27 @@ fun EditorScreen(
     val updatedAt by vm.updatedAt.collectAsStateWithLifecycle()
     val discussions by vm.discussions.collectAsStateWithLifecycle()
     val topicName by vm.topicName.collectAsStateWithLifecycle()
+    val noteAttachments by vm.noteAttachments.collectAsStateWithLifecycle()
+    val discussionAttachments by vm.discussionAttachments.collectAsStateWithLifecycle()
+
+    val app = context.applicationContext as com.yq.suibi.SuibiApp
+    val general by app.settings.general.collectAsStateWithLifecycle(initialValue = com.yq.suibi.data.GeneralConfig())
+
+    /* ---------- 附件 ---------- */
+
+    // 这次选中的文件要挂给谁：null = 笔记本身，否则是讨论 id。
+    var attachOwner by remember { mutableStateOf<Long?>(null) }
+    var attachSheet by remember { mutableStateOf(false) }
+
+    val pickers = rememberAttachmentPickers(context) { uri ->
+        val owner = attachOwner
+        if (owner == null) vm.addNoteAttachment(uri) else vm.addDiscussionAttachment(owner, uri)
+    }
+
+    fun openAttachSheet(owner: Long?) {
+        attachOwner = owner
+        attachSheet = true
+    }
 
     var titleValue by remember { mutableStateOf(TextFieldValue("")) }
     var contentValue by remember { mutableStateOf(TextFieldValue("")) }
@@ -167,7 +198,6 @@ fun EditorScreen(
 
     /* ---------- 导出图片 ---------- */
 
-    val context = LocalContext.current
     // 在组合作用域里先取好配色，导出的协程里不能再读 MaterialTheme。
     val scheme = MaterialTheme.colorScheme
     var exportOpen by remember { mutableStateOf(false) }
@@ -189,7 +219,8 @@ fun EditorScreen(
                 onBg = scheme.onBackground.toArgb(),
                 muted = scheme.outline.toArgb(),
                 accent = scheme.primary.toArgb(),
-                rule = scheme.outlineVariant.toArgb()
+                rule = scheme.outlineVariant.toArgb(),
+                width = general.exportWidth
             )
             val bitmap = withContext(Dispatchers.Default) { NoteImage.render(spec) }
             val name = NoteImage.safeName(titleValue.text)
@@ -218,6 +249,14 @@ fun EditorScreen(
     }
 
     var discussOpen by remember { mutableStateOf(false) }
+    var discussSeeded by remember { mutableStateOf(false) }
+    // 讨论区展开状态默认值来自「通用」，只在首次读到配置时灌一次。
+    LaunchedEffect(general.discussionsExpanded) {
+        if (!discussSeeded) {
+            discussOpen = general.discussionsExpanded
+            discussSeeded = true
+        }
+    }
     var addDiscussion by remember { mutableStateOf(false) }
     var editTarget by remember { mutableStateOf<Discussion?>(null) }
     var deleteTarget by remember { mutableStateOf<Discussion?>(null) }
@@ -410,6 +449,21 @@ fun EditorScreen(
                     )
                 }
 
+                item(key = "note-attachments") {
+                    Column(modifier = Modifier.padding(top = 14.dp)) {
+                        if (noteAttachments.isNotEmpty()) {
+                            AttachmentStrip(
+                                attachments = noteAttachments,
+                                onRemove = { vm.removeAttachment(it) },
+                                onOpen = { openAttachment(context, it) },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            Spacer(Modifier.height(10.dp))
+                        }
+                        AttachButtons(onPick = { openAttachSheet(null) })
+                    }
+                }
+
                 item(key = "discussion-header") {
                     Spacer(Modifier.height(16.dp))
                     HorizontalDivider(
@@ -427,7 +481,11 @@ fun EditorScreen(
                     items(discussions, key = { "d-${it.id}" }) { d ->
                         DiscussionCard(
                             discussion = d,
-                            onLongClick = { sheetTarget = d }
+                            attachments = discussionAttachments[d.id].orEmpty(),
+                            onLongClick = { sheetTarget = d },
+                            onRemoveAttachment = { vm.removeAttachment(it) },
+                            onOpenAttachment = { openAttachment(context, it) },
+                            onAddAttachment = { openAttachSheet(d.id) }
                         )
                     }
 
@@ -449,6 +507,16 @@ fun EditorScreen(
                 }
             }
         }
+    }
+
+    if (attachSheet) {
+        ActionSheet(
+            onDismiss = { attachSheet = false },
+            actions = listOf(
+                SheetAction("选图片", Icons.Rounded.Image) { pickers.pickImage() },
+                SheetAction("选文件", Icons.Rounded.Description) { pickers.pickFile() }
+            )
+        )
     }
 
     if (exportOpen) {
@@ -500,9 +568,10 @@ fun EditorScreen(
     }
 
     deleteTarget?.let { target ->
-        ConfirmDialog(
+        DeleteConfirmDialog(
             title = "删除讨论",
             message = "这条讨论会被永久删除。",
+            confirmTwice = general.confirmDelete,
             onDismiss = { deleteTarget = null },
             onConfirm = {
                 deleteTarget = null
@@ -647,7 +716,11 @@ private fun Modifier.combinedClickableSafe(onClick: () -> Unit): Modifier =
 @Composable
 private fun DiscussionCard(
     discussion: Discussion,
-    onLongClick: () -> Unit
+    attachments: List<Attachment>,
+    onLongClick: () -> Unit,
+    onRemoveAttachment: (Attachment) -> Unit,
+    onOpenAttachment: (Attachment) -> Unit,
+    onAddAttachment: () -> Unit
 ) {
     val shape = RoundedCornerShape(14.dp)
     Surface(
@@ -665,13 +738,104 @@ private fun DiscussionCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
+
+            if (attachments.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                AttachmentStrip(
+                    attachments = attachments,
+                    onRemove = onRemoveAttachment,
+                    onOpen = onOpenAttachment
+                )
+            }
+
             Spacer(Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = absoluteTime(discussion.createdAt),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Spacer(Modifier.weight(1f))
+                IconButton(
+                    onClick = onAddAttachment,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.AttachFile,
+                        contentDescription = "给这条讨论加附件",
+                        tint = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 笔记正文下的「加图片 / 加文件」两个按钮。 */
+@Composable
+private fun AttachButtons(onPick: () -> Unit) {
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        AttachChip(icon = Icons.Rounded.Image, label = "图片", onClick = onPick)
+        AttachChip(icon = Icons.Rounded.Description, label = "文件", onClick = onPick)
+    }
+}
+
+@Composable
+private fun AttachChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    val shape = RoundedCornerShape(10.dp)
+    Surface(
+        shape = shape,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.clip(shape).clickable(onClick = onClick)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(15.dp)
+            )
+            Spacer(Modifier.width(5.dp))
             Text(
-                text = absoluteTime(discussion.createdAt),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
             )
         }
+    }
+}
+
+/** 点开附件：图片走系统图库，其它文件交给能处理它的应用。 */
+private fun openAttachment(context: Context, a: Attachment) {
+    try {
+        val file = AttachmentStore.resolve(context, a.relPath)
+        if (!file.exists()) {
+            toast(context, "文件已不存在")
+            return
+        }
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            context, "${context.packageName}.fileprovider", file
+        )
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, a.mimeType.ifBlank { "*/*" })
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(
+            Intent.createChooser(intent, "打开附件").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    } catch (e: Exception) {
+        toast(context, "没有能打开它的应用")
     }
 }
 
