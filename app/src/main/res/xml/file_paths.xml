@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 导出的长图先落在这里，再交给分享面板 -->
+    <cache-path
+        name="share"
+        path="share/" />
+</paths>

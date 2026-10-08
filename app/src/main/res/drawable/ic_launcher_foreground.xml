@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  随笔图标：一张纸，折角，三行字。纯线条，无填充。
+  自适应图标前景安全区为中心 72x72（108 视口内 18..90）。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 纸的轮廓 -->
+    <path
+        android:pathData="M38,23 L63,23 L76,36 L76,85 L38,85 Z"
+        android:strokeColor="#8C6A4A"
+        android:strokeWidth="3.2"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- 折角 -->
+    <path
+        android:pathData="M63,23 L63,36 L76,36"
+        android:strokeColor="#8C6A4A"
+        android:strokeWidth="3.2"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- 三行字 -->
+    <path
+        android:pathData="M47,50 L67,50"
+        android:strokeColor="#8C6A4A"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <path
+        android:pathData="M47,61 L67,61"
+        android:strokeColor="#8C6A4A"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <path
+        android:pathData="M47,72 L59,72"
+        android:strokeColor="#8C6A4A"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+</vector>
