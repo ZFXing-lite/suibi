@@ -25,8 +25,8 @@ android {
         applicationId = "com.yq.suibi"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.4"
+        versionCode = 7
+        versionName = "1.5"
     }
 
     signingConfigs {
@@ -108,4 +108,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // 富文本的 OffsetMapping 算错了光标会乱跳，又不方便手动试，
+    // 所以给纯逻辑加单元测试。ui-text 在 JVM 上能直接跑。
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.compose.ui:ui-text:1.7.0")
 }

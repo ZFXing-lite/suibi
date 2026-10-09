@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yq.suibi.data.AppDatabase
@@ -73,12 +75,13 @@ import com.yq.suibi.ui.common.ConfirmDialog
 import com.yq.suibi.ui.common.DeleteConfirmDialog
 import com.yq.suibi.ui.common.DeleteIcon
 import com.yq.suibi.ui.common.EditIcon
-import com.yq.suibi.ui.common.HighlightTransform
+import com.yq.suibi.ui.common.RichTextTransform
 import com.yq.suibi.ui.common.SI
 import com.yq.suibi.ui.common.SheetAction
 import com.yq.suibi.ui.common.TextInputDialog
 import com.yq.suibi.ui.common.absoluteTime
 import com.yq.suibi.ui.common.findMatches
+import com.yq.suibi.ui.common.lineRangeOf
 import com.yq.suibi.ui.common.rememberAttachmentPickers
 import com.yq.suibi.ui.common.vmFactory
 import kotlinx.coroutines.CoroutineScope
@@ -378,6 +381,7 @@ fun EditorScreen(
                 )
             }
 
+            // 工具栏的 B / I / <> 要显示当前是否生效，所以把光标处的标记状态传下去
             MarkdownToolbar(
                 onBold = { contentValue = Md.wrap(contentValue, "**").also { vm.onContentChange(it.text) } },
                 onItalic = { contentValue = Md.wrap(contentValue, "*").also { vm.onContentChange(it.text) } },
@@ -387,6 +391,20 @@ fun EditorScreen(
                 onQuote = { contentValue = Md.prefixLine(contentValue, "> ").also { vm.onContentChange(it.text) } },
                 onCode = { contentValue = Md.wrap(contentValue, "`").also { vm.onContentChange(it.text) } },
                 onDivider = { contentValue = Md.insertBlock(contentValue, "---").also { vm.onContentChange(it.text) } },
+                active = remember(contentValue) {
+                    val t = contentValue.text
+                    val a = contentValue.selection.min
+                    val b = contentValue.selection.max
+                    MdState(
+                        bold = Md.isWrapped(t, a, b, "**"),
+                        italic = Md.isWrapped(t, a, b, "*"),
+                        code = Md.isWrapped(t, a, b, "`"),
+                        heading = lineAt(t, a).startsWith("## "),
+                        bullet = lineAt(t, a).startsWith("- "),
+                        ordered = lineAt(t, a).startsWith("1. "),
+                        quote = lineAt(t, a).startsWith("> ")
+                    )
+                },
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
 
@@ -400,6 +418,9 @@ fun EditorScreen(
                 item(key = "content") {
                     // 用 BasicTextField：Material3 的 TextField 不暴露 onTextLayout，
                     // 而滚动到命中处需要 layoutResult 算行位置。
+                    //
+                    // 正文区给足高度：随笔往往只有两三行，之前一行高看着很局促。
+                    // minHeight 撑开可视区域，长文仍随内容增长。
                     BasicTextField(
                         value = contentValue,
                         onValueChange = {
@@ -408,17 +429,28 @@ fun EditorScreen(
                         },
                         onTextLayout = { layoutResult = it },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.onBackground,
+                            lineHeight = 26.sp
                         ),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        visualTransformation = HighlightTransform(
+                        visualTransformation = RichTextTransform(
                             ranges = matches,
                             currentIndex = currentHit,
-                            normal = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
-                            active = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+                            hitNormal = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+                            hitActive = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+                            // 光标所在行不隐藏标记，否则没法编辑 ** 本身
+                            cursorLine = lineRangeOf(contentValue.text, contentValue.selection.max),
+                            accent = MaterialTheme.colorScheme.primary,
+                            muted = MaterialTheme.colorScheme.outline,
+                            codeBg = MaterialTheme.colorScheme.surfaceVariant,
+                            codeFg = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         decorationBox = { inner ->
-                            Box {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 260.dp)
+                            ) {
                                 if (contentValue.text.isEmpty()) {
                                     Text(
                                         text = "写点什么……",
@@ -431,7 +463,7 @@ fun EditorScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
                     )
                 }
 
